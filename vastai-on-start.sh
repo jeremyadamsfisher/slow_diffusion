@@ -12,7 +12,6 @@ export GOOGLE_APPLICATION_CREDENTIALS=/slow_diffusion/service_account.json
 git clone https://github.com/jeremyadamsfisher/slow_diffusion.git /slow_diffusion/slow_diffusion
 gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
 cd /slow_diffusion/slow_diffusion
-mv char_tokenized_wikipedia_gpt3 wikipedia_ds
 
 ## Add creds for later, if desired
 

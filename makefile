@@ -13,10 +13,10 @@ lint:  ## clean up the source code
 	@black .
 
 preview:  ## preview docs server
-	PYTHONPATH=. nbdev_preview
+	@PYTHONPATH=. nbdev_preview
 
 readme:  ## update the readme
-	PYTHONPATH=. nbdev_prepare
+	@PYTHONPATH=. nbdev_prepare
 
 pin:  ## pin python deps
-	pip-compile  -o requirements.txt requirements.in
+	@python -m piptools compile -o requirements.txt requirements.in
