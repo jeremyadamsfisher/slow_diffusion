@@ -1,0 +1,9 @@
+project:
+  output-dir: _docs
+
+website:
+  title: "slow_diffusion"
+  site-url: "https://jeremyadamsfisher.github.io/slow_diffusion"
+  description: "Image diffusion"
+  repo-branch: main
+  repo-url: "https://github.com/jeremyadamsfisher/slow_diffusion"

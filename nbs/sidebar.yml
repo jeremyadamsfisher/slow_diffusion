@@ -1,0 +1,10 @@
+website:
+  sidebar:
+    contents:
+      - index.ipynb
+      - 00_core.ipynb
+      - 01_typing.ipynb
+      - 02_model.ipynb
+      - 03_training.ipynb
+      - 04_data.ipynb
+      - 05_fashion_mnist.ipynb
