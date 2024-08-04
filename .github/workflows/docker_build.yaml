@@ -28,5 +28,6 @@ jobs:
 
       - name: Push to DockerHub
         run: |
-          cog push "jeremyadamsfisher1123/slow-diffusion:${{  github.ref_name }}"
-          cog push "jeremyadamsfisher1123/slow-diffusion:latest"
+          # See: https://github.com/replicate/cog/issues/1821
+          cog --use-cog-base-image=false push "jeremyadamsfisher1123/slow-diffusion:${{  github.ref_name }}"
+          cog --use-cog-base-image=false push "jeremyadamsfisher1123/slow-diffusion:latest"
