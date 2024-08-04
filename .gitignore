@@ -154,3 +154,8 @@ checklink/cookies.txt
 lightning_logs
 wandb
 config.yaml
+ssh_*
+service_account.json
+
+# secrets
+.secrets.json

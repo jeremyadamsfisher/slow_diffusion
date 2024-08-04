@@ -3,9 +3,7 @@ website:
     contents:
       - index.ipynb
       - 00_core.ipynb
-      - 01_typing.ipynb
-      - 02_model.ipynb
-      - 03_training.ipynb
-      - 04_data.ipynb
-      - 05_fashion_mnist.ipynb
-      - 06_cli.ipynb
+      - 01_model.ipynb
+      - 02_training.ipynb
+      - 03_data.ipynb
+      - 04_fashion_mnist.ipynb
