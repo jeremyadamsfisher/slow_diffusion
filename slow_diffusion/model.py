@@ -277,14 +277,16 @@ class Unet(nn.Module):
 
     # Uniquely for a U-net module output dimensions must match the input dimensions
     @jaxtyped(typechecker=beartype)
-    def forward(
-        self, x_t: InFeatureMapTensor, t: TimeStepEmbeddingTensor
-    ) -> InFeatureMapTensor:
-        t = self.time_embedding(t)
+    def forward(self, x_t: InFeatureMapTensor, t: TimeStepTensor) -> InFeatureMapTensor:
+        te = self.time_embedding(t)
+        _, c, _, _ = x_t.shape
+        assert (
+            c == self.start.in_channels
+        ), "model color channels must match input data channels"
         x = self.start(x_t)
         for db in self.downblocks:
-            x = db(x, t)
-        x = self.middle(x, t)
+            x = db(x, te)
+        x = self.middle(x, te)
         for ub, db in zip(self.upblocks, reversed(self.downblocks)):
-            x = ub(x, db, t)
+            x = ub(x, db, te)
         return self.end(x)

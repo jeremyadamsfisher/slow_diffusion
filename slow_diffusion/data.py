@@ -6,9 +6,6 @@ __all__ = ['ᾱ', 'noisify', 'DiffusionDataModule']
 # %% ../nbs/04_data.ipynb 2
 import itertools
 import math
-import multiprocessing
-import tempfile
-from functools import cache
 
 import lightning as L
 import matplotlib.pyplot as plt
@@ -16,8 +13,7 @@ import torch
 import torchvision.transforms.functional as F
 from datasets import load_dataset
 from einops import rearrange
-from torch.utils.data import DataLoader, Dataset, default_collate
-from torchvision import transforms
+from torch.utils.data import DataLoader
 
 # %% ../nbs/04_data.ipynb 3
 def show_images(imgs, titles=[], figsize=(4, 4)):
@@ -59,19 +55,35 @@ def noisify(x_0, t=None):
     return ((x_t, t), ε)
 
 # %% ../nbs/04_data.ipynb 7
-class DiffusionDataModule:
-    def __init__(self, hf_ds_uri, noisfy_fn, bs):
+class DiffusionDataModule(L.LightningDataModule):
+    """Lightning DataModule wrapper for huggingface datasets. Helps with
+    pre-processing the image data. Just add a noify(batch) function!"""
+
+    def __init__(self, hf_ds_uri, bs, img_size: tuple[int, int] | None = None):
+        super().__init__()
         self.bs = bs
-        self.noisfy_fn = noisfy_fn
         self.hf_ds_uri = hf_ds_uri
+        self.img_size = img_size
+
+    def noisify_fn(self, x_0):
+        raise NotImplementedError
+
+    def to_tensor(self, img):
+        if self.img_size is not None:
+            img = img.resize(self.img_size)
+        x = F.pil_to_tensor(img)
+        _, h, w = x.shape
+        assert h & (h - 1) == 0, f"height ({h}) must be a power of two"
+        assert w & (w - 1) == 0, f"width ({w}) must be a power of two"
+        return x
 
     def _collate(self, batch):
-        x_0 = torch.stack([F.pil_to_tensor(row["image"]) for row in batch])
-        return self.noisfy_fn(x_0)
+        x_0 = torch.stack([self.to_tensor(row["image"]) for row in batch])
+        return self.noisify_fn(x_0)
 
     def _freeze(self, batch):
-        x_0 = torch.stack([F.pil_to_tensor(img) for img in batch["image"]])
-        ((x_t, t), epsilon) = self.noisfy_fn(x_0)
+        x_0 = torch.stack([self.to_tensor(img) for img in batch["image"]])
+        ((x_t, t), epsilon) = self.noisify_fn(x_0)
         return {"x_t": x_t, "t": t, "epsilon": epsilon}
 
     def _frozen_collate(self, rows):

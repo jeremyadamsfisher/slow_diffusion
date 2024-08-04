@@ -1,0 +1,16 @@
+# lightning.pytorch==2.3.3
+trainer:
+  max_epochs: 2
+  logger:
+    class_path: lightning.pytorch.loggers.WandbLogger
+    init_args:
+      project: "slow_diffusion"
+model:
+  nfs: [224, 448, 672, 896]
+  n_blocks: [3, 2, 2, 1, 1]
+  color_channels: 1
+  lr: 0.004
+data:
+  class_path: slow_diffusion.fashionmnist.FashionMNISTDataModule
+  init_args:
+    bs: 32

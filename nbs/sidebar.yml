@@ -8,3 +8,4 @@ website:
       - 03_training.ipynb
       - 04_data.ipynb
       - 05_fashion_mnist.ipynb
+      - 06_cli.ipynb
