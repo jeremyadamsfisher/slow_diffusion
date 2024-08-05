@@ -25,7 +25,12 @@ statuses = [ '1 - Planning', '2 - Pre-Alpha', '3 - Alpha',
 py_versions = '3.6 3.7 3.8 3.9 3.10'.split()
 
 with open("requirements.txt") as f:
-    requirements = [l.strip() for l in f.readlines()]
+    requirements = []
+    for line in f:
+        if line.startswith("--") or line.startswith("#"):
+            continue
+        requirements.append(line)
+
 if cfg.get('pip_requirements'): requirements += shlex.split(cfg.get('pip_requirements', ''))
 min_python = cfg['min_python']
 lic = licenses.get(cfg['license'].lower(), (cfg['license'], None))
