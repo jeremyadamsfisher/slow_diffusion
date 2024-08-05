@@ -14,8 +14,8 @@ trainer:
   callbacks:
     - class_path: lightning.pytorch.callbacks.ModelCheckpoint
       init_args:
-        monitor: "test_loss"
         every_n_train_steps: 100 # too often, just to test the gcs integration
+        # monitor: "test_loss" # not compatible with every_n_train_steps < epoch
 model:
   nfs: [224, 448, 672, 896]
   n_blocks: [3, 2, 2, 1, 1]
