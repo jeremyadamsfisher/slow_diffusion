@@ -29,6 +29,7 @@ def show_images(imgs, titles=[], figsize=(4, 4)):
         if title:
             ax.set(title=title)
     fig.tight_layout()
+    return fig
 
 # %% ../nbs/03_data.ipynb 5
 def ᾱ(t, reshape=True):
@@ -78,6 +79,10 @@ class DiffusionDataModule(L.LightningDataModule):
     def noisify_fn(self, x_0):
         raise NotImplementedError
 
+    def post_process(self, ds):
+        """Optional post-processing pass after download but before freezing"""
+        raise NotImplementedError
+
     def to_tensor(self, img):
         if self.img_size is not None:
             img = img.resize(self.img_size)
@@ -102,13 +107,23 @@ class DiffusionDataModule(L.LightningDataModule):
 
         return (s("x_t"), s("t")), s("epsilon")
 
-    def setup(self, stage: str | None = None, test_splits=("test",)):
-        # Check if the dataset already exists
+    @property
+    def cached_dir(self):
         global tdir
-        dir_ = Path(tdir) / self.hf_ds_uri
+        return Path(tdir) / f"self.{__class__.__name__}_{self.hf_ds_uri}"
 
-        if not dir_.exists():
+    def clean(self):
+        self.cached_dir.unlink()
+
+    def setup(self, stage: str | None = None, test_splits=("test",)):
+        if not self.cached_dir.exists():
             ds = load_dataset(self.hf_ds_uri)
+
+            try:
+                ds = self.post_process(ds)
+            except NotImplementedError:
+                pass
+
             for split in test_splits:
                 ds[split] = ds[split].map(
                     self._freeze,
@@ -118,10 +133,10 @@ class DiffusionDataModule(L.LightningDataModule):
                 )
 
             # Note that format doesn't really matter, but it needs to be serializable
-            ds.save_to_disk(dir_)
+            ds.save_to_disk(self.cached_dir)
 
         # Load from disk to take advantage of mmapping
-        self.ds = load_from_disk(dir_)
+        self.ds = load_from_disk(self.cached_dir)
 
     @property
     def n_workers(self):

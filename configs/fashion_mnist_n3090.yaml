@@ -1,7 +1,7 @@
 # lightning.pytorch==2.3.3
 trainer:
   max_epochs: 25
-  precision: "bf16"
+  precision: "bf16-mixed"
   # This might introduce latency, but I want to be extremely sure that the
   # loss curvature is initially very smooth for a small dataset to validate
   # potential training issues later on
@@ -12,6 +12,7 @@ trainer:
     init_args:
       project: "slow_diffusion"
   callbacks:
+    - class_path: slow_diffusion.ddpm.DDPMCallback
     - class_path: lightning.pytorch.callbacks.ModelCheckpoint
       init_args:
         every_n_train_steps: 100 # too often, just to test the gcs integration
