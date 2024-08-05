@@ -7,3 +7,4 @@ website:
       - 02_training.ipynb
       - 03_data.ipynb
       - 04_fashion_mnist.ipynb
+      - 05_ddpm.ipynb

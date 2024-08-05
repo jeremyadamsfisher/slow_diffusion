@@ -241,7 +241,7 @@ class TimeEmbeddingMLP(nn.Module):
         return x
 
 # %% ../nbs/01_model.ipynb 26
-class Unet(nn.Module):
+class Unet(nn.Module, KaimingInitializable):
     """Diffusion U-net with a diffusion time dimension"""
 
     def __init__(
