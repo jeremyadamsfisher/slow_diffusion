@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://jeremyadamsfisher.github.io/slow_diffusion/fashion_mnist.html</loc>
+    <lastmod>2024-08-05T06:28:39.026Z</lastmod>
+  </url>
+  <url>
+    <loc>https://jeremyadamsfisher.github.io/slow_diffusion/training.html</loc>
+    <lastmod>2024-08-05T06:28:37.898Z</lastmod>
+  </url>
+  <url>
+    <loc>https://jeremyadamsfisher.github.io/slow_diffusion/model.html</loc>
+    <lastmod>2024-08-05T06:28:39.138Z</lastmod>
+  </url>
+  <url>
+    <loc>https://jeremyadamsfisher.github.io/slow_diffusion/data.html</loc>
+    <lastmod>2024-08-05T06:28:39.214Z</lastmod>
+  </url>
+  <url>
+    <loc>https://jeremyadamsfisher.github.io/slow_diffusion/ddpm.html</loc>
+    <lastmod>2024-08-05T06:28:39.702Z</lastmod>
+  </url>
+  <url>
+    <loc>https://jeremyadamsfisher.github.io/slow_diffusion/core.html</loc>
+    <lastmod>2024-08-05T06:28:32.694Z</lastmod>
+  </url>
+  <url>
+    <loc>https://jeremyadamsfisher.github.io/slow_diffusion/index.html</loc>
+    <lastmod>2024-08-05T06:28:37.926Z</lastmod>
+  </url>
+</urlset>
