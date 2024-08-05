@@ -12,6 +12,7 @@ aiohttp==3.10.0
     # via
     #   datasets
     #   fsspec
+    #   gcsfs
 aiosignal==1.3.1
     # via aiohttp
 antlr4-python3-runtime==4.9.3
@@ -32,6 +33,8 @@ beartype==0.18.5
     # via -r requirements.in
 bitsandbytes==0.42.0
     # via lightning
+cachetools==5.4.0
+    # via google-auth
 certifi==2024.7.4
     # via
     #   requests
@@ -50,6 +53,8 @@ cycler==0.12.1
     # via matplotlib
 datasets==2.20.0
     # via -r requirements.in
+decorator==5.1.1
+    # via gcsfs
 dill==0.3.8
     # via
     #   datasets
@@ -75,17 +80,46 @@ frozenlist==1.4.1
     # via
     #   aiohttp
     #   aiosignal
-fsspec[http]==2024.5.0
+fsspec[gcs,http]==2024.5.0
     # via
+    #   -r requirements.in
     #   datasets
+    #   gcsfs
     #   huggingface-hub
     #   lightning
     #   pytorch-lightning
     #   torch
+gcsfs==2024.5.0
+    # via fsspec
 gitdb==4.0.11
     # via gitpython
 gitpython==3.1.43
     # via wandb
+google-api-core==2.19.1
+    # via
+    #   google-cloud-core
+    #   google-cloud-storage
+google-auth==2.32.0
+    # via
+    #   gcsfs
+    #   google-api-core
+    #   google-auth-oauthlib
+    #   google-cloud-core
+    #   google-cloud-storage
+google-auth-oauthlib==1.2.1
+    # via gcsfs
+google-cloud-core==2.4.1
+    # via google-cloud-storage
+google-cloud-storage==2.18.0
+    # via gcsfs
+google-crc32c==1.5.0
+    # via
+    #   google-cloud-storage
+    #   google-resumable-media
+google-resumable-media==2.7.1
+    # via google-cloud-storage
+googleapis-common-protos==1.63.2
+    # via google-api-core
 h11==0.14.0
     # via uvicorn
 httptools==0.6.1
@@ -150,6 +184,8 @@ numpy==2.0.1
     #   tensorboardx
     #   torchmetrics
     #   torchvision
+oauthlib==3.2.2
+    # via requests-oauthlib
 omegaconf==2.3.0
     # via
     #   hydra-core
@@ -173,8 +209,13 @@ pillow==10.4.0
     #   torchvision
 platformdirs==4.2.2
     # via wandb
+proto-plus==1.24.0
+    # via google-api-core
 protobuf==5.27.3
     # via
+    #   google-api-core
+    #   googleapis-common-protos
+    #   proto-plus
     #   tensorboardx
     #   wandb
 psutil==6.0.0
@@ -183,6 +224,12 @@ pyarrow==17.0.0
     # via datasets
 pyarrow-hotfix==0.6
     # via datasets
+pyasn1==0.6.0
+    # via
+    #   pyasn1-modules
+    #   rsa
+pyasn1-modules==0.4.0
+    # via google-auth
 pydantic==1.10.17
     # via
     #   cog
@@ -216,10 +263,18 @@ requests==2.32.3
     # via
     #   cog
     #   datasets
+    #   gcsfs
+    #   google-api-core
+    #   google-cloud-storage
     #   huggingface-hub
+    #   requests-oauthlib
     #   wandb
+requests-oauthlib==2.0.0
+    # via google-auth-oauthlib
 rich==13.7.1
     # via lightning
+rsa==4.9
+    # via google-auth
 scipy==1.14.0
     # via bitsandbytes
 sentry-sdk==2.12.0

@@ -65,7 +65,7 @@ tdir = tempfile.gettempdir()
 
 class DiffusionDataModule(L.LightningDataModule):
     """Lightning DataModule wrapper for huggingface datasets. Helps with
-    pre-processing the image data. Just add a noify(batch) function!"""
+    pre-processing the image data. Just add a noisify_fn(batch)!"""
 
     def __init__(
         self, hf_ds_uri, bs, n_workers=0, img_size: tuple[int, int] | None = None
@@ -132,7 +132,6 @@ class DiffusionDataModule(L.LightningDataModule):
                     remove_columns=ds[split].features.keys(),
                 )
 
-            # Note that format doesn't really matter, but it needs to be serializable
             ds.save_to_disk(self.cached_dir)
 
         # Load from disk to take advantage of mmapping
