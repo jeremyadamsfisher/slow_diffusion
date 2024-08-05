@@ -13,4 +13,5 @@ model:
 data:
   class_path: slow_diffusion.fashionmnist.FashionMNISTDataModule
   init_args:
-    bs: 32
+    bs: 512
+    n_workers: -1

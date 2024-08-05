@@ -13,10 +13,11 @@ from .training import UnetLightning
 
 # %% ../nbs/04_fashion_mnist.ipynb 3
 class FashionMNISTDataModule(DiffusionDataModule):
-    def __init__(self, bs):
+    def __init__(self, bs, n_workers=0):
         super().__init__(
             "fashion_mnist",
             bs,
+            n_workers,
             img_size=(32, 32),
         )
 
