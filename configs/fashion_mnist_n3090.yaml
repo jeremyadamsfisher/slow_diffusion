@@ -11,6 +11,11 @@ trainer:
     class_path: lightning.pytorch.loggers.WandbLogger
     init_args:
       project: "slow_diffusion"
+  callbacks:
+    - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+      init_args:
+        monitor: "test_loss"
+        every_n_train_steps: 100 # too often, just to test the gcs integration
 model:
   nfs: [224, 448, 672, 896]
   n_blocks: [3, 2, 2, 1, 1]
