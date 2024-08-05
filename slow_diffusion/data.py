@@ -133,6 +133,7 @@ class DiffusionDataModule(L.LightningDataModule):
     def train_dataloader(self):
         return DataLoader(
             self.ds["train"],
+            shuffle=True,
             batch_size=self.bs,
             collate_fn=self._collate,
             num_workers=self.n_workers,
