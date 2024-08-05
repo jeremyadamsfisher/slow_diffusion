@@ -1,22 +1,24 @@
 # lightning.pytorch==2.3.3
 trainer:
+  default_root_dir: .lightning_root_dir
   max_epochs: 25
   precision: "bf16-mixed"
   # This might introduce latency, but I want to be extremely sure that the
   # loss curvature is initially very smooth for a small dataset to validate
   # potential training issues later on
   log_every_n_steps: 1
-  default_root_dir: gs://slow_diffusion
   logger:
     class_path: lightning.pytorch.loggers.WandbLogger
     init_args:
       project: "slow_diffusion"
   callbacks:
     - class_path: slow_diffusion.ddpm.DDPMCallback
-    - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+    - class_path: CustomModelCheckpoint
       init_args:
-        every_n_train_steps: 100 # too often, just to test the gcs integration
-        # monitor: "test_loss" # not compatible with every_n_train_steps < epoch
+        dirpath: "gs://slow_diffusion/training_runs/fashion_mnist_tiny_mbp"
+        filename: "ckpt-{epoch:02d}-{global_step}-{test_loss}"
+        save_top_k: 1
+        monitor: "test_loss"
 model:
   nfs: [224, 448, 672, 896]
   n_blocks: [3, 2, 2, 1, 1]
