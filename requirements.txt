@@ -29,10 +29,15 @@ attrs==23.2.0
     # via
     #   aiohttp
     #   cog
+    #   glom
 beartype==0.18.5
     # via -r requirements.in
 bitsandbytes==0.42.0
     # via lightning
+boltons==24.0.0
+    # via
+    #   face
+    #   glom
 cachetools==5.4.0
     # via google-auth
 certifi==2024.7.4
@@ -67,6 +72,8 @@ einops==0.8.0
     # via -r requirements.in
 exceptiongroup==1.2.2
     # via anyio
+face==20.1.1
+    # via glom
 fastapi==0.98.0
     # via cog
 filelock==3.15.4
@@ -95,6 +102,8 @@ gitdb==4.0.11
     # via gitpython
 gitpython==3.1.43
     # via wandb
+glom==23.5.0
+    # via -r requirements.in
 google-api-core==2.19.1
     # via
     #   google-cloud-core

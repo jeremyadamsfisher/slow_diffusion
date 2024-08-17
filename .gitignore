@@ -159,3 +159,6 @@ service_account.json
 
 # secrets
 .secrets.json
+
+# Huggingface dataset dir
+data

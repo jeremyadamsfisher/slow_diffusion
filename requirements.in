@@ -8,6 +8,7 @@ wandb==0.17.5
 datasets==2.20.0
 matplotlib==3.9.1
 fsspec[gcs]
+glom==23.5.0
 
 # https://github.com/replicate/cog/blob/d160cc29de9e6eea4932be3a8e3276819feff875/pkg/config/torch_compatibility_matrix.json#L18
 --find-links https://download.pytorch.org/whl/cu118
