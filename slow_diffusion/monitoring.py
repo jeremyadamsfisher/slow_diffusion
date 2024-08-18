@@ -3,9 +3,22 @@
 # %% auto 0
 __all__ = ['MonitorCallback', 'CountDeadUnitsCallback', 'Stats', 'StatsCallback']
 
+# %% ../nbs/05_monitoring.ipynb 2
+import re
+from argparse import Namespace
+
+import lightning as L
+import wandb
+from glom import glom
+from lightning.pytorch.loggers import WandbLogger
+from torch import nn
+
+from .fashionmnist import FashionMNISTDataModule
+from .training import get_tiny_unet
+
 # %% ../nbs/05_monitoring.ipynb 3
 class MonitorCallback(L.Callback):
-    def __init__(self, /, **gloms):
+    def __init__(self, gloms: dict[str, str]):
         super().__init__()
         if not gloms:
             raise ValueError
@@ -43,8 +56,8 @@ class Stats:
         if not module.training:
             return
         activations = activations.cpu()
-        self.log(f"{label}:mean", activations.mean().cpu().item())
-        self.log(f"{label}:std", activations.std().cpu().item())
+        self.log(f"{self.label}:mean", activations.mean().cpu().item())
+        self.log(f"{self.label}:std", activations.std().cpu().item())
 
     def cleanup(self):
         self.hook.remove()
@@ -54,7 +67,7 @@ class StatsCallback(L.Callback):
     def __init__(
         self,
         mods: list[type[nn.Module]] | None = None,
-        mod_filter: list[str] | None = None,
+        mod_filter: str | None = None,
     ):
         assert mods or mod_filter
         self.mods = []

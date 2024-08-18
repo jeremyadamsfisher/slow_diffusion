@@ -7,7 +7,6 @@ from lightning.pytorch.cli import LightningCLI
 from slow_diffusion import __version__
 from slow_diffusion.training import UnetLightning
 
-
 class CustomModelCheckpoint(L.pytorch.callbacks.ModelCheckpoint):
     def __init__(self, dirpath, *args, **kwargs):
         now = datetime.now()

@@ -21,7 +21,8 @@ trainer:
         monitor: "test_loss"
     - class_path: slow_diffusion.monitoring.MonitorCallback
       init_args:
-        lr: "trainer.optimizers.0.param_groups.0.lr"
+        gloms:
+          lr: "trainer.optimizers.0.param_groups.0.lr"
     - class_path: slow_diffusion.monitoring.CountDeadUnitsCallback
     - class_path: slow_diffusion.monitoring.StatsCallback
       init_args:
