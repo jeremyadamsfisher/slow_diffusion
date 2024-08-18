@@ -22,8 +22,8 @@ trainer:
     - class_path: slow_diffusion.monitoring.MonitorCallback
       init_args:
         lr: "trainer.optimizers.0.param_groups.0.lr"
-    - class_path: CountDeadUnitsCallback
-    - class_path: StatsCallback
+    - class_path: slow_diffusion.monitoring.CountDeadUnitsCallback
+    - class_path: slow_diffusion.monitoring.StatsCallback
       init_args:
         mod_filter: "convs"
 model:

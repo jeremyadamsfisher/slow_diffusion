@@ -15,15 +15,15 @@ trainer:
     - class_path: slow_diffusion.ddpm.DDPMCallback
     - class_path: CustomModelCheckpoint
       init_args:
-        dirpath: "gs://slow_diffusion/training_runs/fashion_mnist_tiny_mbp"
+        dirpath: "gs://slow_diffusion/training_runs/fashion_mnist_n3090"
         filename: "ckpt-{epoch:02d}-{global_step}-{test_loss}"
         save_top_k: 1
         monitor: "test_loss"
     - class_path: slow_diffusion.monitoring.MonitorCallback
       init_args:
         lr: "trainer.optimizers.0.param_groups.0.lr"
-    - class_path: CountDeadUnitsCallback
-    - class_path: StatsCallback
+    - class_path: slow_diffusion.monitoring.CountDeadUnitsCallback
+    - class_path: slow_diffusion.monitoring.StatsCallback
       init_args:
         mod_filter: "convs"
 model:
