@@ -4,7 +4,7 @@ cog==0.9.13
 numpy==2.0.1
 lightning[pytorch-extra]==2.3.3
 einops==0.8.0
-wandb==0.17.5
+wandb==0.17.7
 datasets==2.20.0
 matplotlib==3.9.1
 fsspec[gcs]

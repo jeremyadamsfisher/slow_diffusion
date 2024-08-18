@@ -3,10 +3,6 @@ trainer:
   default_root_dir: .lightning_root_dir
   max_epochs: 5
   precision: "bf16-mixed"
-  # This might introduce latency, but I want to be extremely sure that the
-  # loss curvature is initially very smooth for a small dataset to validate
-  # potential training issues later on
-  log_every_n_steps: 1
   logger:
     class_path: lightning.pytorch.loggers.WandbLogger
     init_args:
@@ -33,7 +29,7 @@ model:
   color_channels: 1
   lr: 0.004
 data:
-  class_path: slow_diffusion.fashionmnist.TinyFashionMNISTDataModule
+  class_path: slow_diffusion.fashionmnist.FashionMNISTDataModule
   init_args:
     bs: 32
     n_workers: 0
