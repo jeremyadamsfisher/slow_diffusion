@@ -13,6 +13,13 @@ git clone https://github.com/jeremyadamsfisher/slow_diffusion.git /slow_diffusio
 gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
 cd /slow_diffusion/slow_diffusion
 
+echo "deb [signed-by=/usr/share/keyrings/cloud.google.asc] http://packages.cloud.google.com/apt cloud-sdk main" \
+| tee -a /etc/apt/sources.list.d/google-cloud-sdk.list \
+&& curl https://packages.cloud.google.com/apt/doc/apt-key.gpg \
+| tee /usr/share/keyrings/cloud.google.asc \
+&& apt-get update -y \
+&& apt-get install google-cloud-sdk -y
+
 ## Add creds for later, if desired
 
 echo WANDB_API_KEY=$WANDB_API_KEY >> /etc/environment
