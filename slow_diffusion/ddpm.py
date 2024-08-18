@@ -44,7 +44,7 @@ def ddpm(model, sz, n_steps, device=None):
 
     return x_0
 
-# %% ../nbs/04_ddpm.ipynb 7
+# %% ../nbs/04_ddpm.ipynb 6
 class DDPMCallback(L.Callback):
     def __init__(self, n_imgs=4, n_steps=100):
         super().__init__()
