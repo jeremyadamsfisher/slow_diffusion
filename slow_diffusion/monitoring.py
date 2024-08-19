@@ -18,12 +18,12 @@ from torch import nn
 from .fashionmnist import FashionMNISTDataModule
 from .training import get_tiny_unet
 
-# %% ../nbs/05_monitoring.ipynb 6
+# %% ../nbs/05_monitoring.ipynb 5
 class MonitorCallback(L.Callback):
+    """Log arbitrary properties in the training run, such as LR."""
+
     def __init__(self, gloms: dict[str, str]):
         super().__init__()
-        if not gloms:
-            raise ValueError
         self.gloms = gloms
 
     def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx):
@@ -39,14 +39,19 @@ class MonitorCallback(L.Callback):
 
 # %% ../nbs/05_monitoring.ipynb 9
 class CountDeadUnitsCallback(L.Callback):
+    """Check for numeric underflow or overflow"""
+
     def __init__(self):
         super().__init__()
 
     def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx):
         nans = 0
+        zeros = 0
         for _, params in pl_module.named_parameters():
             nans += params.isnan().int().sum().item()
-        self.log("dead_units", nans, reduce_fx=sum)
+            zeros += (params == 0).sum().item()
+        self.log("nans", nans, reduce_fx=max)
+        self.log("zeros", zeros, reduce_fx=max)
 
 # %% ../nbs/05_monitoring.ipynb 12
 class Stats:
@@ -118,13 +123,14 @@ class StatsCallback(L.Callback):
                 mod_stat.plot(ax0, ax1)
             fig.legend(loc=7)
             fig.subplots_adjust(right=0.75)
-            if log:
-                img = wandb.Image(fig)
-                wandb.log({"stats": img})
+            return fig
 
     def cleanup(self):
         if not self.live:
-            self.plot()
+            fig = self.plot()
+            img = wandb.Image(fig)
+            wandb.log({"stats": img})
+
         for s in self.mod_stats:
             s.cleanup()
 
