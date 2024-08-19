@@ -6,8 +6,10 @@ __all__ = ['MonitorCallback', 'CountDeadUnitsCallback', 'Stats', 'StatsCallback'
 # %% ../nbs/05_monitoring.ipynb 2
 import re
 from argparse import Namespace
+from collections import Counter
 
 import lightning as L
+import matplotlib.pyplot as plt
 import wandb
 from glom import glom
 from lightning.pytorch.loggers import WandbLogger
@@ -16,7 +18,7 @@ from torch import nn
 from .fashionmnist import FashionMNISTDataModule
 from .training import get_tiny_unet
 
-# %% ../nbs/05_monitoring.ipynb 3
+# %% ../nbs/05_monitoring.ipynb 6
 class MonitorCallback(L.Callback):
     def __init__(self, gloms: dict[str, str]):
         super().__init__()
@@ -35,7 +37,7 @@ class MonitorCallback(L.Callback):
         for name, spec in self.gloms.items():
             self.log(name, glom(args, spec), on_step=True)
 
-# %% ../nbs/05_monitoring.ipynb 4
+# %% ../nbs/05_monitoring.ipynb 9
 class CountDeadUnitsCallback(L.Callback):
     def __init__(self):
         super().__init__()
@@ -46,18 +48,32 @@ class CountDeadUnitsCallback(L.Callback):
             nans += params.isnan().int().sum().item()
         self.log("dead_units", nans, reduce_fx=sum)
 
-# %% ../nbs/05_monitoring.ipynb 5
+# %% ../nbs/05_monitoring.ipynb 12
 class Stats:
-    def __init__(self, label, module):
+    def __init__(self, label, module, log, live):
         self.label = label
         self.hook = module.register_forward_hook(self.append)
+        self.log = log
+        self.live = live
+        self.means = []
+        self.stds = []
 
     def append(self, module, _, activations):
         if not module.training:
             return
         activations = activations.cpu()
-        self.log(f"{self.label}:mean", activations.mean().cpu().item())
-        self.log(f"{self.label}:std", activations.std().cpu().item())
+        mean = activations.mean().cpu().item()
+        std = activations.std().cpu().item()
+        if self.live:
+            self.log(f"{self.label}:mean", mean)
+            self.log(f"{self.label}:std", std)
+        else:
+            self.means.append(mean)
+            self.stds.append(std)
+
+    def plot(self, ax0, ax1):
+        ax0.plot(self.means)
+        ax1.plot(self.stds, label=self.label)
 
     def cleanup(self):
         self.hook.remove()
@@ -68,6 +84,7 @@ class StatsCallback(L.Callback):
         self,
         mods: list[type[nn.Module]] | None = None,
         mod_filter: str | None = None,
+        live=False,
     ):
         assert mods or mod_filter
         self.mods = []
@@ -75,18 +92,39 @@ class StatsCallback(L.Callback):
             self.mods.extend(mods)
         self.mod_filter = mod_filter
         self.mod_stats = []
+        self.live = live
 
     def on_fit_start(self, trainer, pl_module):
+        c = Counter()
+        for mod in self.mods:
+            cls_name = mod.__class__.__name__
+            name = f"{cls_name}:{c.get(cls_name)}"
+            s = Stats(name, mod, self.log, self.live)
+            self.mod_stats.append(s)
+            c.update((cls_name,))
+
         if self.mod_filter is not None:
             for name, mod in pl_module.named_modules():
                 if re.match(self.mod_filter, name):
-                    self.mods.append(mod)
+                    s = Stats(name, mod, self.log, self.live)
+                    self.mod_stats.append(s)
 
-        for i, mod in self.mods:
-            s = Stats(f"layer_{i}", mod)
-            self.mod_stats.append(s)
+    def plot(self, log=True):
+        with plt.style.context("ggplot"):
+            fig, (ax0, ax1) = plt.subplots(1, 2, figsize=(8, 3))
+            ax0.set(title="Means", xlabel="Time Step", ylabel="Activation")
+            ax1.set(title="STDs", xlabel="Time Step")
+            for mod_stat in self.mod_stats:
+                mod_stat.plot(ax0, ax1)
+            fig.legend(loc=7)
+            fig.subplots_adjust(right=0.75)
+            if log:
+                img = wandb.Image(fig)
+                wandb.log({"stats": img})
 
     def cleanup(self):
+        if not self.live:
+            self.plot()
         for s in self.mod_stats:
             s.cleanup()
 
