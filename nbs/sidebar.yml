@@ -8,3 +8,4 @@ website:
       - 03_fashion_mnist.ipynb
       - 04_ddpm.ipynb
       - 05_monitoring.ipynb
+      - 06_initialization.ipynb

@@ -138,5 +138,5 @@ d = { 'settings': { 'branch': 'main',
                                                                                                   'slow_diffusion/training.py'),
                                          'slow_diffusion.training.UnetLightning.validation_step': ( 'training.html#unetlightning.validation_step',
                                                                                                     'slow_diffusion/training.py'),
-                                         'slow_diffusion.training.get_tiny_unet': ( 'training.html#get_tiny_unet',
-                                                                                    'slow_diffusion/training.py')}}}
+                                         'slow_diffusion.training.get_tiny_unet_lightning': ( 'training.html#get_tiny_unet_lightning',
+                                                                                              'slow_diffusion/training.py')}}}

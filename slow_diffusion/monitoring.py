@@ -16,7 +16,7 @@ from lightning.pytorch.loggers import WandbLogger
 from torch import nn
 
 from .fashionmnist import FashionMNISTDataModule
-from .training import get_tiny_unet
+from .training import get_tiny_unet_lightning
 
 # %% ../nbs/05_monitoring.ipynb 5
 class MonitorCallback(L.Callback):

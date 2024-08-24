@@ -4,16 +4,15 @@
 __all__ = []
 
 # %% ../nbs/06_initialization.ipynb 2
-import math
+from collections import Counter
+from contextlib import contextmanager
 from functools import singledispatch
-from typing import Sequence, TypeAlias
 
+import lightning as L
 import matplotlib.pyplot as plt
-import numpy as np
 import torch
-from beartype import beartype
-from jaxtyping import Float, Int, jaxtyped
-from torch import Tensor, nn
+from torch import nn
 
-from .fashionmnist import TinyFashionMNISTDataModule
+from .fashionmnist import FashionMNISTDataModule
 from .model import ConvBlock
+from .training import get_tiny_unet_lightning

@@ -9,10 +9,9 @@ __all__ = ['InFeatureMapTensor', 'OutFeatureMapTensor', 'TimeStepTensor', 'TimeS
 import math
 from typing import Sequence, TypeAlias
 
-import numpy as np
 import torch
 from beartype import beartype
-from jaxtyping import Float, Int, jaxtyped
+from jaxtyping import Float, jaxtyped
 from torch import Tensor, nn
 
 # %% ../nbs/00_model.ipynb 4
@@ -30,9 +29,9 @@ class ConvBlock(nn.Module):
         self,
         c_in: int,
         c_out: int,
+        act: type[nn.Module],
         ks: int = 3,
         stride: int = 1,
-        act: type[nn.Module] = nn.ReLU,
     ):
         super().__init__()
         self.ks = ks
@@ -94,9 +93,9 @@ class ResBlock(nn.Module):
         c_time: int,
         c_in: int,
         c_out: int,
+        act: type[nn.Module],
         ks: int = 3,
         stride: int = 2,
-        act: type[nn.Module] = nn.ReLU,
     ):
         super().__init__()
         self.c_time = c_time
@@ -130,7 +129,7 @@ class ResBlock(nn.Module):
     def forward(
         self, x: InFeatureMapTensor, t_emb: TimeStepEmbeddingTensor
     ) -> OutFeatureMapTensor:
-        x = self.non_residual(x, t_emb) + self.residual(x)
+        x = self.non_residual(x, t_emb) / 2 + self.residual(x) / 2
         self.output = x
         return x
 
@@ -144,9 +143,9 @@ class Downblock(nn.Module):
         c_time: int,
         c_in: int,
         c_out: int,
+        act: type[nn.Module],
         downsample: bool = True,
         n_layers: int = 1,
-        act: type[nn.Module] = nn.ReLU,
     ):
         super().__init__()
         self.c_time = c_time
@@ -183,9 +182,9 @@ class Upblock(nn.Module):
         c_time: int,
         c_in: int,
         c_out: int,
+        act: type[nn.Module],
         upsample: bool = True,
         n_layers: int = 1,
-        act: type[nn.Module] = nn.ReLU,
     ):
         super().__init__()
         self.c_time = c_time
@@ -200,8 +199,8 @@ class Upblock(nn.Module):
         )
         self.convs = nn.ModuleList()
         for _ in range(n_layers - 1):
-            self.convs.append(ResBlock(c_time, c_in * 2, c_in, stride=1))
-        self.convs.append(ResBlock(c_time, c_in * 2, c_out, stride=1))
+            self.convs.append(ResBlock(c_time, c_in * 2, c_in, stride=1, act=act))
+        self.convs.append(ResBlock(c_time, c_in * 2, c_out, stride=1, act=act))
 
     @classmethod
     def from_downblock(cls, downblock):
@@ -255,8 +254,8 @@ class Unet(nn.Module):
         self,
         nfs: Sequence[int],
         n_blocks: Sequence[int],
+        act: type[nn.Module],
         color_channels: int = 3,
-        act: type[nn.Module] = nn.ReLU,
     ):
         assert len(n_blocks) - 1 == len(nfs)
         super().__init__()
@@ -300,9 +299,12 @@ class Unet(nn.Module):
         return self.end(x)
 
 # %% ../nbs/00_model.ipynb 24
-def get_tiny_unet():
-    return UnetLightning(
+def get_tiny_unet(**kwargs):
+    if "act" not in kwargs:
+        kwargs["act"] = nn.ReLU
+    return Unet(
         nfs=(224, 448, 672, 896),
         n_blocks=(3, 2, 2, 1, 1),
         color_channels=1,
+        **kwargs,
     )

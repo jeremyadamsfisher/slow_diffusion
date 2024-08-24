@@ -4,19 +4,16 @@
 __all__ = ['denoisify', 'ddpm', 'DDPMCallback']
 
 # %% ../nbs/04_ddpm.ipynb 2
-import math
-
 import lightning as L
 import torch
-import torchvision
-import wandb
 from lightning.pytorch.loggers import WandbLogger
 from torch import tensor
 from tqdm import tqdm
 
+import wandb
 from .data import noisify, show_images, ᾱ
 from .fashionmnist import TinyFashionMNISTDataModule
-from .training import get_tiny_unet
+from .training import get_tiny_unet_lightning
 
 # %% ../nbs/04_ddpm.ipynb 3
 def denoisify(x_t, noise, t):

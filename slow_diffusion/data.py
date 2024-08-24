@@ -7,7 +7,6 @@ __all__ = ['ᾱ', 'noisify', 'DiffusionDataModule']
 import itertools
 import math
 import multiprocessing
-import tempfile
 from pathlib import Path
 
 import lightning as L
