@@ -1,6 +1,6 @@
 #!/bin/env bash
 
-set -euxo pipefail
+set -xo pipefail
 
 ## Set up dev environment
 
