@@ -20,3 +20,6 @@ readme:  ## update the readme
 
 pin:  ## pin python deps
 	@python -m piptools compile -o requirements.txt requirements.in
+
+generate-configs:  ## generate training run configs
+	@(cd configs/jsonnet && ./generateConfigs.sh)
