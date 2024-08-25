@@ -10,11 +10,11 @@ from collections import Counter
 
 import lightning as L
 import matplotlib.pyplot as plt
-import wandb
 from glom import glom
 from lightning.pytorch.loggers import WandbLogger
 from torch import nn
 
+import wandb
 from .fashionmnist import FashionMNISTDataModule
 from .training import get_tiny_unet_lightning
 
@@ -125,17 +125,23 @@ class StatsCallback(L.Callback):
             fig.subplots_adjust(right=0.75)
             return fig
 
-    def cleanup(self):
+    def log(self):
         if not self.live:
             fig = self.plot()
             img = wandb.Image(fig)
             wandb.log({"stats": img})
 
+    def on_train_epoch_end(self, trainer, pl_module):
+        self.log()
+
+    def cleanup(self):
         for s in self.mod_stats:
             s.cleanup()
 
     def on_fit_end(self, trainer, pl_module):
+        self.log()
         self.cleanup()
 
     def on_exception(self, trainer, pl_module, exception):
+        self.log()
         self.cleanup()

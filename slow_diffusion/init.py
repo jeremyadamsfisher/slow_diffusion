@@ -11,6 +11,7 @@ from functools import singledispatch
 import lightning as L
 import matplotlib.pyplot as plt
 import torch
+import logging
 from torch import nn
 
 from .fashionmnist import FashionMNISTDataModule

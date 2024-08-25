@@ -303,8 +303,8 @@ def get_tiny_unet(**kwargs):
     if "act" not in kwargs:
         kwargs["act"] = nn.ReLU
     return Unet(
-        nfs=(224, 448, 672, 896),
-        n_blocks=(3, 2, 2, 1, 1),
+        nfs=[32, 64, 128, 256, 384],
+        n_blocks=[3, 2, 1, 1, 1, 1],
         color_channels=1,
         **kwargs,
     )

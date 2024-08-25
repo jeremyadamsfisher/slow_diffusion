@@ -26,7 +26,6 @@ class UnetLightning(L.LightningModule):
         one_cycle_div_factor: float = 25.0,
         one_cycle_final_div_factor: float = 1e4,
         adamw_epsilon: float = 1e-5,
-        kaiming: bool = False,
         act: type[torch.nn.Module] = torch.nn.ReLU,
     ):
         """Unet training code
@@ -46,7 +45,6 @@ class UnetLightning(L.LightningModule):
                 via min_lr = initial_lr/final_div_factor Default: 1e4
             adamw_epsilon: term added to the denominator to improve numerical
                 stability. PyTorch defaults to 1e-8. 1e-5 is better.
-            kaiming: apply kaiming initialization
             act: activation function
         """
         super().__init__()
@@ -55,10 +53,6 @@ class UnetLightning(L.LightningModule):
         self.unet = Unet(
             nfs=nfs, n_blocks=n_blocks, color_channels=color_channels, act=act
         )
-        if kaiming:
-            from slowai.init import kaiming
-
-            self.unet = self.unet.apply(kaiming)
         self.save_hyperparameters()
         self.loss_fn = torch.nn.MSELoss()
 
