@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.57">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Central diffusion model specification">
+
+<title>Model – slow_diffusion</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="styles.css">
+<meta property="og:title" content="Model – slow_diffusion">
+<meta property="og:description" content="Central diffusion model specification">
+<meta property="og:site_name" content="slow_diffusion">
+<meta name="twitter:title" content="Model – slow_diffusion">
+<meta name="twitter:description" content="Central diffusion model specification">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">slow_diffusion</span>
+    </a>
+  </div>
+        <div class="quarto-navbar-tools tools-end">
+</div>
+          <div id="quarto-search" class="" title="Search"></div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./model.html">Model</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Slow Diffusion</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./model.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Model</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./training.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Training Algorithm</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Data</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./fashion_mnist.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Data - FashionMNIST</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./ddpm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">DDPM</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./monitoring.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Monitoring</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./initialization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Initialization</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#modules" id="toc-modules" class="nav-link active" data-scroll-target="#modules">Modules</a>
+  <ul class="collapse">
+  <li><a href="#preactconvblock" id="toc-preactconvblock" class="nav-link" data-scroll-target="#preactconvblock">PreactConvBlock</a></li>
+  <li><a href="#timestep_embedding" id="toc-timestep_embedding" class="nav-link" data-scroll-target="#timestep_embedding">timestep_embedding</a></li>
+  <li><a href="#timeembeddingmixer" id="toc-timeembeddingmixer" class="nav-link" data-scroll-target="#timeembeddingmixer">TimeEmbeddingMixer</a></li>
+  <li><a href="#preactresblock" id="toc-preactresblock" class="nav-link" data-scroll-target="#preactresblock">PreactResBlock</a></li>
+  <li><a href="#nonpreactresblock" id="toc-nonpreactresblock" class="nav-link" data-scroll-target="#nonpreactresblock">NonPreactResBlock</a></li>
+  <li><a href="#downblock" id="toc-downblock" class="nav-link" data-scroll-target="#downblock">Downblock</a></li>
+  <li><a href="#upblock" id="toc-upblock" class="nav-link" data-scroll-target="#upblock">Upblock</a></li>
+  <li><a href="#timeembeddingmlp" id="toc-timeembeddingmlp" class="nav-link" data-scroll-target="#timeembeddingmlp">TimeEmbeddingMLP</a></li>
+  <li><a href="#unet" id="toc-unet" class="nav-link" data-scroll-target="#unet">Unet</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/jeremyadamsfisher/slow_diffusion/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Model</h1>
+</div>
+
+<div>
+  <div class="description">
+    Central diffusion model specification
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<p>This is adapted from my <a href="">FastAI notes</a></p>
+<div id="cell-3" class="cell" data-execution_count="3">
+<details open="" class="code-fold">
+<summary>Exported source</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>InFeatureMapTensor: TypeAlias <span class="op">=</span> Float[Tensor, <span class="st">"bs c_in h_in w_in"</span>]</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>OutFeatureMapTensor: TypeAlias <span class="op">=</span> Float[Tensor, <span class="st">"bs c_out h_out w_out"</span>]</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>TimeStepTensor: TypeAlias <span class="op">=</span> Float[Tensor, <span class="st">"bs"</span>]  <span class="co"># from 0 to 1</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>TimeStepEmbeddingTensor: TypeAlias <span class="op">=</span> Float[Tensor, <span class="st">"bs t"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<section id="modules" class="level2">
+<h2 class="anchored" data-anchor-id="modules">Modules</h2>
+<p>Now, let’s get to the module definitions.</p>
+<p>The ConvBlock is laid out in the “Preactivation” configuration, like so:</p>
+<p><img src="https://www.researchgate.net/publication/337691625/figure/fig2/AS:831842160746496@1575338034408/Architecture-of-normal-residual-block-a-and-pre-activation-residual-block-b.jpg" class="img-fluid"></p>
+<p>This does mean that we need to take care in the first block to use a “raw” nn.Conv, because otherwise the activation would discard pixel information.</p>
+<hr>
+<p><a href="https://github.com/jeremyadamsfisher/slow_diffusion/blob/main/slow_diffusion/model.py#L24" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="preactconvblock" class="level3">
+<h3 class="anchored" data-anchor-id="preactconvblock">PreactConvBlock</h3>
+<blockquote class="blockquote">
+<pre><code> PreactConvBlock (c_in:int, c_out:int,
+                  act:type[torch.nn.modules.module.Module], ks:int=3,
+                  stride:int=1)</code></pre>
+</blockquote>
+<p><em>Wrapper for a Conv block with normalization and activation</em></p>
+<div id="cell-6" class="cell" data-execution_count="4">
+<details open="" class="code-fold">
+<summary>Exported source</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> PreactConvBlock(nn.Module):</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Wrapper for a Conv block with normalization and activation"""</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">@beartype</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>,</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        c_in: <span class="bu">int</span>,</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        c_out: <span class="bu">int</span>,</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>        act: <span class="bu">type</span>[nn.Module],</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>        ks: <span class="bu">int</span> <span class="op">=</span> <span class="dv">3</span>,</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>        stride: <span class="bu">int</span> <span class="op">=</span> <span class="dv">1</span>,</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    ):</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.ks <span class="op">=</span> ks</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.norm <span class="op">=</span> nn.BatchNorm2d(c_in)</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.act <span class="op">=</span> act()</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.conv <span class="op">=</span> nn.Conv2d(</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>            c_in,</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>            c_out,</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>            stride<span class="op">=</span>stride,</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>            kernel_size<span class="op">=</span>ks,</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>            padding<span class="op">=</span>ks <span class="op">//</span> <span class="dv">2</span>,</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>            bias<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">@jaxtyped</span>(typechecker<span class="op">=</span>beartype)</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, x: InFeatureMapTensor) <span class="op">-&gt;</span> OutFeatureMapTensor:</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> <span class="va">self</span>.norm(x)</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> <span class="va">self</span>.act(x)</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> <span class="va">self</span>.conv(x)</span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<hr>
+<p><a href="https://github.com/jeremyadamsfisher/slow_diffusion/blob/main/slow_diffusion/model.py#L58" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="timestep_embedding" class="level3">
+<h3 class="anchored" data-anchor-id="timestep_embedding">timestep_embedding</h3>
+<blockquote class="blockquote">
+<pre><code> timestep_embedding (ts:jaxtyping.Float[Tensor,'bs'], emb_dim:int,
+                     max_period:int=10000)</code></pre>
+</blockquote>
+<div id="cell-8" class="cell" data-execution_count="5">
+<details open="" class="code-fold">
+<summary>Exported source</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="at">@jaxtyped</span>(typechecker<span class="op">=</span>beartype)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> timestep_embedding(</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    ts: TimeStepTensor, emb_dim: <span class="bu">int</span>, max_period: <span class="bu">int</span> <span class="op">=</span> <span class="dv">10_000</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> TimeStepEmbeddingTensor:</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    exponent <span class="op">=</span> <span class="op">-</span>math.log(max_period) <span class="op">*</span> torch.linspace(</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>        <span class="dv">0</span>, <span class="dv">1</span>, emb_dim <span class="op">//</span> <span class="dv">2</span>, device<span class="op">=</span>ts.device</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    embedding <span class="op">=</span> ts[:, <span class="va">None</span>].<span class="bu">float</span>() <span class="op">*</span> exponent.exp()[<span class="va">None</span>, :]</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    embedding <span class="op">=</span> torch.cat([embedding.sin(), embedding.cos()], dim<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> embedding</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<hr>
+<p><a href="https://github.com/jeremyadamsfisher/slow_diffusion/blob/main/slow_diffusion/model.py#L69" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="timeembeddingmixer" class="level3">
+<h3 class="anchored" data-anchor-id="timeembeddingmixer">TimeEmbeddingMixer</h3>
+<blockquote class="blockquote">
+<pre><code> TimeEmbeddingMixer (c_time:int, c_out:int,
+                     act:type[torch.nn.modules.module.Module]=&lt;class
+                     'torch.nn.modules.activation.ReLU'&gt;)</code></pre>
+</blockquote>
+<p><em>Incorporate the time embedding into the ResBlock logits</em></p>
+<div id="cell-10" class="cell" data-execution_count="6">
+<details open="" class="code-fold">
+<summary>Exported source</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> TimeEmbeddingMixer(nn.Module):</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Incorporate the time embedding into the ResBlock logits"""</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">@beartype</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, c_time: <span class="bu">int</span>, c_out: <span class="bu">int</span>, act: <span class="bu">type</span>[nn.Module] <span class="op">=</span> nn.ReLU):</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.lin <span class="op">=</span> nn.Linear(c_time, c_out <span class="op">*</span> <span class="dv">2</span>)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.act <span class="op">=</span> act()</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">@jaxtyped</span>(typechecker<span class="op">=</span>beartype)</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> forward(</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>, x: InFeatureMapTensor, t_emb: TimeStepEmbeddingTensor</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    ) <span class="op">-&gt;</span> OutFeatureMapTensor:</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>        t_emb <span class="op">=</span> <span class="va">self</span>.lin(<span class="va">self</span>.act(t_emb))[:, :, <span class="va">None</span>, <span class="va">None</span>]</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>        scale, shift <span class="op">=</span> torch.chunk(t_emb, <span class="dv">2</span>, dim<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> x <span class="op">*</span> (<span class="dv">1</span> <span class="op">+</span> scale) <span class="op">+</span> shift</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<hr>
+<p><a href="https://github.com/jeremyadamsfisher/slow_diffusion/blob/main/slow_diffusion/model.py#L87" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="preactresblock" class="level3">
+<h3 class="anchored" data-anchor-id="preactresblock">PreactResBlock</h3>
+<blockquote class="blockquote">
+<pre><code> PreactResBlock (c_time:int, c_in:int, c_out:int,
+                 act:type[torch.nn.modules.module.Module])</code></pre>
+</blockquote>
+<p><em>Conv resblock with the preactivation configuration and time embedding modulation</em></p>
+<div id="cell-12" class="cell" data-execution_count="7">
+<details open="" class="code-fold">
+<summary>Exported source</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> PreactResBlock(nn.Module):</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Conv resblock with the preactivation configuration and time embedding modulation"""</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">@beartype</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>,</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>        c_time: <span class="bu">int</span>,</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>        c_in: <span class="bu">int</span>,</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>        c_out: <span class="bu">int</span>,</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>        act: <span class="bu">type</span>[nn.Module],</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    ):</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.c_time <span class="op">=</span> c_time</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.c_in <span class="op">=</span> c_in</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.c_out <span class="op">=</span> c_out</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.time_mixer <span class="op">=</span> TimeEmbeddingMixer(c_time, c_out, act<span class="op">=</span>act)</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.conv_a <span class="op">=</span> PreactConvBlock(c_in, c_out, act<span class="op">=</span>act)</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.conv_b <span class="op">=</span> PreactConvBlock(c_out, c_out, act<span class="op">=</span>act)</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> c_in <span class="op">!=</span> c_out:</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.id_conv <span class="op">=</span> nn.Conv2d(c_in, c_out, kernel_size<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.id_conv <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Used for the Unet cross-link</span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.output <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> non_residual(<span class="va">self</span>, x, t_emb):</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> <span class="va">self</span>.conv_a(x)</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> <span class="va">self</span>.time_mixer(x, t_emb)</span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> <span class="va">self</span>.conv_b(x)</span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> x</span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> residual(<span class="va">self</span>, x):</span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="va">self</span>.id_conv <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="va">self</span>.id_conv(x)</span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> x</span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>    <span class="at">@jaxtyped</span>(typechecker<span class="op">=</span>beartype)</span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> forward(</span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>, x: InFeatureMapTensor, t_emb: TimeStepEmbeddingTensor</span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a>    ) <span class="op">-&gt;</span> OutFeatureMapTensor:</span>
+<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> <span class="va">self</span>.non_residual(x, t_emb) <span class="op">+</span> <span class="va">self</span>.residual(x)</span>
+<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.output <span class="op">=</span> x</span>
+<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<hr>
+<p><a href="https://github.com/jeremyadamsfisher/slow_diffusion/blob/main/slow_diffusion/model.py#L135" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="nonpreactresblock" class="level3">
+<h3 class="anchored" data-anchor-id="nonpreactresblock">NonPreactResBlock</h3>
+<blockquote class="blockquote">
+<pre><code> NonPreactResBlock (c_time:int, c_in:int, c_out:int,
+                    act:type[torch.nn.modules.module.Module])</code></pre>
+</blockquote>
+<p><em>Conv resblock with the classic residual configuration and time embedding modulation</em></p>
+<div id="cell-14" class="cell" data-execution_count="8">
+<details open="" class="code-fold">
+<summary>Exported source</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> NonPreactResBlock(nn.Module):</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Conv resblock with the classic residual configuration and time embedding modulation"""</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">@beartype</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>,</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>        c_time: <span class="bu">int</span>,</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>        c_in: <span class="bu">int</span>,</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>        c_out: <span class="bu">int</span>,</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>        act: <span class="bu">type</span>[nn.Module],</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    ):</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.c_time <span class="op">=</span> c_time</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.c_in <span class="op">=</span> c_in</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.c_out <span class="op">=</span> c_out</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.time_mixer <span class="op">=</span> TimeEmbeddingMixer(c_time, c_out, act<span class="op">=</span>act)</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.conv_a <span class="op">=</span> nn.Conv2d(c_in, c_out, kernel_size<span class="op">=</span><span class="dv">3</span>, padding<span class="op">=</span><span class="dv">3</span> <span class="op">//</span> <span class="dv">2</span>, bias<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.norm_a <span class="op">=</span> nn.BatchNorm2d(c_out)</span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.act_a <span class="op">=</span> act()</span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.conv_b <span class="op">=</span> nn.Conv2d(c_out, c_out, kernel_size<span class="op">=</span><span class="dv">3</span>, padding<span class="op">=</span><span class="dv">3</span> <span class="op">//</span> <span class="dv">2</span>, bias<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.norm_b <span class="op">=</span> nn.BatchNorm2d(c_out)</span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.act_b <span class="op">=</span> act()</span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> c_in <span class="op">!=</span> c_out:</span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.id_conv <span class="op">=</span> nn.Conv2d(c_in, c_out, kernel_size<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.id_conv <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Used for the Unet cross-link</span></span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.output <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a>    <span class="at">@jaxtyped</span>(typechecker<span class="op">=</span>beartype)</span>
+<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> forward(</span>
+<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>, x_orig: InFeatureMapTensor, t_emb: TimeStepEmbeddingTensor</span>
+<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a>    ) <span class="op">-&gt;</span> OutFeatureMapTensor:</span>
+<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> <span class="va">self</span>.conv_a(x_orig)</span>
+<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> <span class="va">self</span>.norm_a(x)</span>
+<span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> <span class="va">self</span>.act_a(x)</span>
+<span id="cb11-40"><a href="#cb11-40" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> <span class="va">self</span>.conv_b(x)</span>
+<span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> <span class="va">self</span>.norm_b(x)</span>
+<span id="cb11-42"><a href="#cb11-42" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> <span class="va">self</span>.time_mixer(x, t_emb)</span>
+<span id="cb11-43"><a href="#cb11-43" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="va">self</span>.id_conv:</span>
+<span id="cb11-44"><a href="#cb11-44" aria-hidden="true" tabindex="-1"></a>            x_orig <span class="op">=</span> <span class="va">self</span>.id_conv(x_orig)</span>
+<span id="cb11-45"><a href="#cb11-45" aria-hidden="true" tabindex="-1"></a>        x <span class="op">+=</span> x_orig</span>
+<span id="cb11-46"><a href="#cb11-46" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> <span class="va">self</span>.act_b(x)</span>
+<span id="cb11-47"><a href="#cb11-47" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.output <span class="op">=</span> x</span>
+<span id="cb11-48"><a href="#cb11-48" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div id="cell-15" class="cell" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>xb <span class="op">=</span> torch.randn(<span class="dv">16</span>, <span class="dv">3</span>, <span class="dv">8</span>, <span class="dv">8</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-16" class="cell" data-execution_count="10">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>bs <span class="op">=</span> xb.shape[<span class="dv">0</span>]</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>ts: TimeStepTensor <span class="op">=</span> torch.linspace(<span class="op">-</span><span class="dv">10</span>, <span class="dv">10</span>, bs)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>tse <span class="op">=</span> timestep_embedding(ts, <span class="dv">32</span>)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>tse.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="10">
+<pre><code>torch.Size([16, 32])</code></pre>
+</div>
+</div>
+<div id="cell-17" class="cell" data-execution_count="11">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>ts</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="11">
+<pre><code>tensor([-10.0000,  -8.6667,  -7.3333,  -6.0000,  -4.6667,  -3.3333,  -2.0000,
+         -0.6667,   0.6667,   2.0000,   3.3333,   4.6667,   6.0000,   7.3333,
+          8.6667,  10.0000])</code></pre>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/jeremyadamsfisher/slow_diffusion/blob/main/slow_diffusion/model.py#L185" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="downblock" class="level3">
+<h3 class="anchored" data-anchor-id="downblock">Downblock</h3>
+<blockquote class="blockquote">
+<pre><code> Downblock (c_time:int, c_in:int, c_out:int,
+            act:type[torch.nn.modules.module.Module],
+            downsample:bool=True, n_layers:int=1,
+            res_block_cls:type[torch.nn.modules.module.Module]=&lt;class
+            '__main__.PreactResBlock'&gt;)</code></pre>
+</blockquote>
+<p><em>A superblock consisting of many downblocks of similar resolutions</em></p>
+<div id="cell-19" class="cell" data-execution_count="12">
+<details open="" class="code-fold">
+<summary>Exported source</summary>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Downblock(nn.Module):</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""A superblock consisting of many downblocks of similar resolutions"""</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">@beartype</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>,</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>        c_time: <span class="bu">int</span>,</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>        c_in: <span class="bu">int</span>,</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>        c_out: <span class="bu">int</span>,</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>        act: <span class="bu">type</span>[nn.Module],</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>        downsample: <span class="bu">bool</span> <span class="op">=</span> <span class="va">True</span>,</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>        n_layers: <span class="bu">int</span> <span class="op">=</span> <span class="dv">1</span>,</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>        res_block_cls: <span class="bu">type</span>[nn.Module] <span class="op">=</span> PreactResBlock,</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>    ):</span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.c_time <span class="op">=</span> c_time</span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.c_in <span class="op">=</span> c_in</span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.c_out <span class="op">=</span> c_out</span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.downsample <span class="op">=</span> downsample</span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.n_layers <span class="op">=</span> n_layers</span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.act <span class="op">=</span> act</span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.res_block_cls <span class="op">=</span> res_block_cls</span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.convs <span class="op">=</span> nn.ModuleList()</span>
+<span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.convs.append(res_block_cls(c_time, c_in, c_out, act<span class="op">=</span>act))</span>
+<span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(n_layers <span class="op">-</span> <span class="dv">1</span>):</span>
+<span id="cb18-27"><a href="#cb18-27" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.convs.append(res_block_cls(c_time, c_out, c_out, act<span class="op">=</span>act))</span>
+<span id="cb18-28"><a href="#cb18-28" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.downsampler <span class="op">=</span> nn.Conv2d(c_out, c_out, kernel_size<span class="op">=</span><span class="dv">3</span>, stride<span class="op">=</span><span class="dv">2</span>, padding<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb18-29"><a href="#cb18-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-30"><a href="#cb18-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">@jaxtyped</span>(typechecker<span class="op">=</span>beartype)</span>
+<span id="cb18-31"><a href="#cb18-31" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> forward(</span>
+<span id="cb18-32"><a href="#cb18-32" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>, x: InFeatureMapTensor, t: TimeStepEmbeddingTensor</span>
+<span id="cb18-33"><a href="#cb18-33" aria-hidden="true" tabindex="-1"></a>    ) <span class="op">-&gt;</span> OutFeatureMapTensor:</span>
+<span id="cb18-34"><a href="#cb18-34" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> conv <span class="kw">in</span> <span class="va">self</span>.convs:</span>
+<span id="cb18-35"><a href="#cb18-35" aria-hidden="true" tabindex="-1"></a>            x <span class="op">=</span> conv(x, t)</span>
+<span id="cb18-36"><a href="#cb18-36" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="va">self</span>.downsample:</span>
+<span id="cb18-37"><a href="#cb18-37" aria-hidden="true" tabindex="-1"></a>            x <span class="op">=</span> <span class="va">self</span>.downsampler(x)</span>
+<span id="cb18-38"><a href="#cb18-38" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div id="cell-20" class="cell" data-execution_count="13">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>d <span class="op">=</span> Downblock(<span class="dv">32</span>, <span class="dv">3</span>, <span class="dv">2</span>, act<span class="op">=</span>nn.ReLU)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> torch.no_grad():</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    yb <span class="op">=</span> d(xb, tse)</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>xb.shape, yb.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="13">
+<pre><code>(torch.Size([16, 3, 8, 8]), torch.Size([16, 2, 4, 4]))</code></pre>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/jeremyadamsfisher/slow_diffusion/blob/main/slow_diffusion/model.py#L225" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="upblock" class="level3">
+<h3 class="anchored" data-anchor-id="upblock">Upblock</h3>
+<blockquote class="blockquote">
+<pre><code> Upblock (c_time:int, c_in:int, c_out:int,
+          act:type[torch.nn.modules.module.Module], upsample:bool=True,
+          n_layers:int=1,
+          res_block_cls:type[torch.nn.modules.module.Module]=&lt;class
+          '__main__.PreactResBlock'&gt;)</code></pre>
+</blockquote>
+<p><em>A superblock consisting of many upblocks of similar resolutions and logic to use the activations of the counterpart downblock.</em></p>
+<div id="cell-22" class="cell" data-execution_count="14">
+<details open="" class="code-fold">
+<summary>Exported source</summary>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Upblock(nn.Module):</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""A superblock consisting of many upblocks of similar resolutions</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="co">    and logic to use the activations of the counterpart downblock."""</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">@beartype</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>,</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>        c_time: <span class="bu">int</span>,</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>        c_in: <span class="bu">int</span>,</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>        c_out: <span class="bu">int</span>,</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>        act: <span class="bu">type</span>[nn.Module],</span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>        upsample: <span class="bu">bool</span> <span class="op">=</span> <span class="va">True</span>,</span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>        n_layers: <span class="bu">int</span> <span class="op">=</span> <span class="dv">1</span>,</span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>        res_block_cls: <span class="bu">type</span>[nn.Module] <span class="op">=</span> PreactResBlock,</span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>    ):</span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.c_time <span class="op">=</span> c_time</span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.c_in <span class="op">=</span> c_in</span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.c_out <span class="op">=</span> c_out</span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.upsample <span class="op">=</span> upsample</span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.n_layers <span class="op">=</span> n_layers</span>
+<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-23"><a href="#cb22-23" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.upsampler <span class="op">=</span> nn.Sequential(</span>
+<span id="cb22-24"><a href="#cb22-24" aria-hidden="true" tabindex="-1"></a>            nn.Upsample(scale_factor<span class="op">=</span><span class="dv">2</span>),</span>
+<span id="cb22-25"><a href="#cb22-25" aria-hidden="true" tabindex="-1"></a>            nn.Conv2d(c_in, c_in, kernel_size<span class="op">=</span><span class="dv">3</span>, padding<span class="op">=</span><span class="dv">1</span>),</span>
+<span id="cb22-26"><a href="#cb22-26" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb22-27"><a href="#cb22-27" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.convs <span class="op">=</span> nn.ModuleList()</span>
+<span id="cb22-28"><a href="#cb22-28" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(n_layers <span class="op">-</span> <span class="dv">1</span>):</span>
+<span id="cb22-29"><a href="#cb22-29" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.convs.append(res_block_cls(c_time, c_in <span class="op">*</span> <span class="dv">2</span>, c_in, act<span class="op">=</span>act))</span>
+<span id="cb22-30"><a href="#cb22-30" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.convs.append(res_block_cls(c_time, c_in <span class="op">*</span> <span class="dv">2</span>, c_out, act<span class="op">=</span>act))</span>
+<span id="cb22-31"><a href="#cb22-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-32"><a href="#cb22-32" aria-hidden="true" tabindex="-1"></a>    <span class="at">@classmethod</span></span>
+<span id="cb22-33"><a href="#cb22-33" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> from_downblock(cls, downblock):</span>
+<span id="cb22-34"><a href="#cb22-34" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> cls(</span>
+<span id="cb22-35"><a href="#cb22-35" aria-hidden="true" tabindex="-1"></a>            c_time<span class="op">=</span>downblock.c_time,</span>
+<span id="cb22-36"><a href="#cb22-36" aria-hidden="true" tabindex="-1"></a>            c_in<span class="op">=</span>downblock.c_out,</span>
+<span id="cb22-37"><a href="#cb22-37" aria-hidden="true" tabindex="-1"></a>            c_out<span class="op">=</span>downblock.c_in,</span>
+<span id="cb22-38"><a href="#cb22-38" aria-hidden="true" tabindex="-1"></a>            upsample<span class="op">=</span>downblock.downsample,</span>
+<span id="cb22-39"><a href="#cb22-39" aria-hidden="true" tabindex="-1"></a>            n_layers<span class="op">=</span>downblock.n_layers,</span>
+<span id="cb22-40"><a href="#cb22-40" aria-hidden="true" tabindex="-1"></a>            act<span class="op">=</span>downblock.act,</span>
+<span id="cb22-41"><a href="#cb22-41" aria-hidden="true" tabindex="-1"></a>            res_block_cls<span class="op">=</span>downblock.res_block_cls,</span>
+<span id="cb22-42"><a href="#cb22-42" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb22-43"><a href="#cb22-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-44"><a href="#cb22-44" aria-hidden="true" tabindex="-1"></a>    <span class="at">@jaxtyped</span>(typechecker<span class="op">=</span>beartype)</span>
+<span id="cb22-45"><a href="#cb22-45" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> forward(</span>
+<span id="cb22-46"><a href="#cb22-46" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>, x: InFeatureMapTensor, downblock: Downblock, t: TimeStepEmbeddingTensor</span>
+<span id="cb22-47"><a href="#cb22-47" aria-hidden="true" tabindex="-1"></a>    ) <span class="op">-&gt;</span> OutFeatureMapTensor:</span>
+<span id="cb22-48"><a href="#cb22-48" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="va">self</span>.upsample:</span>
+<span id="cb22-49"><a href="#cb22-49" aria-hidden="true" tabindex="-1"></a>            x <span class="op">=</span> <span class="va">self</span>.upsampler(x)</span>
+<span id="cb22-50"><a href="#cb22-50" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> up, down <span class="kw">in</span> <span class="bu">zip</span>(<span class="va">self</span>.convs, <span class="bu">reversed</span>(downblock.convs)):</span>
+<span id="cb22-51"><a href="#cb22-51" aria-hidden="true" tabindex="-1"></a>            x <span class="op">=</span> up(torch.cat((x, down.output), dim<span class="op">=</span><span class="dv">1</span>), t)</span>
+<span id="cb22-52"><a href="#cb22-52" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div id="cell-23" class="cell" data-execution_count="15">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>u <span class="op">=</span> Upblock.from_downblock(d)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> torch.no_grad():</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    xp <span class="op">=</span> u(yb, d, tse)</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>xb.shape <span class="op">==</span> xp.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="15">
+<pre><code>True</code></pre>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/jeremyadamsfisher/slow_diffusion/blob/main/slow_diffusion/model.py#L279" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="timeembeddingmlp" class="level3">
+<h3 class="anchored" data-anchor-id="timeembeddingmlp">TimeEmbeddingMLP</h3>
+<blockquote class="blockquote">
+<pre><code> TimeEmbeddingMLP (c_in:int, c_out:int, act=&lt;class
+                   'torch.nn.modules.activation.ReLU'&gt;)</code></pre>
+</blockquote>
+<p><em>Small neural network to modify the “raw” time embeddings</em></p>
+<div id="cell-25" class="cell" data-execution_count="16">
+<details open="" class="code-fold">
+<summary>Exported source</summary>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> TimeEmbeddingMLP(nn.Module):</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Small neural network to modify the "raw" time embeddings"""</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, c_in: <span class="bu">int</span>, c_out: <span class="bu">int</span>, act<span class="op">=</span>nn.ReLU):</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.c_in <span class="op">=</span> c_in</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.c_out <span class="op">=</span> c_out</span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.time_emb_mlp <span class="op">=</span> nn.Sequential(</span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>            nn.BatchNorm1d(c_in),</span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>            nn.Linear(c_in, c_out),</span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>            nn.ReLU(),</span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a>            nn.Linear(c_out, c_out),</span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">@jaxtyped</span>(typechecker<span class="op">=</span>beartype)</span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, t: TimeStepTensor) <span class="op">-&gt;</span> TimeStepEmbeddingTensor:</span>
+<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Look up the sin/cos embedding  of the time step</span></span>
+<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> timestep_embedding(t, <span class="va">self</span>.c_in).to(t.device)</span>
+<span id="cb26-19"><a href="#cb26-19" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Allow the model to slightly modify the embeddings</span></span>
+<span id="cb26-20"><a href="#cb26-20" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> <span class="va">self</span>.time_emb_mlp(x)</span>
+<span id="cb26-21"><a href="#cb26-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<hr>
+<p><a href="https://github.com/jeremyadamsfisher/slow_diffusion/blob/main/slow_diffusion/model.py#L302" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="unet" class="level3">
+<h3 class="anchored" data-anchor-id="unet">Unet</h3>
+<blockquote class="blockquote">
+<pre><code> Unet (nfs:Sequence[int], n_blocks:Sequence[int],
+       act:type[torch.nn.modules.module.Module], color_channels:int=3,
+       res_block_cls:type[torch.nn.modules.module.Module]=&lt;class
+       '__main__.PreactResBlock'&gt;)</code></pre>
+</blockquote>
+<p><em>Diffusion U-net with a diffusion time dimension</em></p>
+<div id="cell-27" class="cell" data-execution_count="17">
+<details open="" class="code-fold">
+<summary>Exported source</summary>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Unet(nn.Module):</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Diffusion U-net with a diffusion time dimension"""</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>,</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>        nfs: Sequence[<span class="bu">int</span>],</span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>        n_blocks: Sequence[<span class="bu">int</span>],</span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>        act: <span class="bu">type</span>[nn.Module],</span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>        color_channels: <span class="bu">int</span> <span class="op">=</span> <span class="dv">3</span>,</span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>        res_block_cls: <span class="bu">type</span>[nn.Module] <span class="op">=</span> PreactResBlock,</span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>    ):</span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">assert</span> <span class="bu">len</span>(n_blocks) <span class="op">-</span> <span class="dv">1</span> <span class="op">==</span> <span class="bu">len</span>(nfs)</span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.time_embedding <span class="op">=</span> TimeEmbeddingMLP(nfs[<span class="dv">0</span>], <span class="dv">4</span> <span class="op">*</span> nfs[<span class="dv">0</span>])</span>
+<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a>        c_time <span class="op">=</span> <span class="va">self</span>.time_embedding.c_out</span>
+<span id="cb28-17"><a href="#cb28-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-18"><a href="#cb28-18" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Since we use pre-activation ResBlocks, we need to use a Conv2d here</span></span>
+<span id="cb28-19"><a href="#cb28-19" aria-hidden="true" tabindex="-1"></a>        <span class="co"># to avoid discarding pixel information</span></span>
+<span id="cb28-20"><a href="#cb28-20" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.start <span class="op">=</span> nn.Conv2d(</span>
+<span id="cb28-21"><a href="#cb28-21" aria-hidden="true" tabindex="-1"></a>            color_channels, nfs[<span class="dv">0</span>], kernel_size<span class="op">=</span>(<span class="dv">3</span>, <span class="dv">3</span>), stride<span class="op">=</span>(<span class="dv">1</span>, <span class="dv">1</span>), padding<span class="op">=</span>(<span class="dv">1</span>, <span class="dv">1</span>)</span>
+<span id="cb28-22"><a href="#cb28-22" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb28-23"><a href="#cb28-23" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.downblocks <span class="op">=</span> nn.ModuleList()</span>
+<span id="cb28-24"><a href="#cb28-24" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.upblocks <span class="op">=</span> nn.ModuleList()</span>
+<span id="cb28-25"><a href="#cb28-25" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> c_in, c_out, n_layers <span class="kw">in</span> <span class="bu">zip</span>(nfs, nfs[<span class="dv">1</span>:], n_blocks):</span>
+<span id="cb28-26"><a href="#cb28-26" aria-hidden="true" tabindex="-1"></a>            db <span class="op">=</span> Downblock(</span>
+<span id="cb28-27"><a href="#cb28-27" aria-hidden="true" tabindex="-1"></a>                c_time,</span>
+<span id="cb28-28"><a href="#cb28-28" aria-hidden="true" tabindex="-1"></a>                c_in,</span>
+<span id="cb28-29"><a href="#cb28-29" aria-hidden="true" tabindex="-1"></a>                c_out,</span>
+<span id="cb28-30"><a href="#cb28-30" aria-hidden="true" tabindex="-1"></a>                n_layers<span class="op">=</span>n_layers,</span>
+<span id="cb28-31"><a href="#cb28-31" aria-hidden="true" tabindex="-1"></a>                act<span class="op">=</span>act,</span>
+<span id="cb28-32"><a href="#cb28-32" aria-hidden="true" tabindex="-1"></a>                res_block_cls<span class="op">=</span>res_block_cls,</span>
+<span id="cb28-33"><a href="#cb28-33" aria-hidden="true" tabindex="-1"></a>            )</span>
+<span id="cb28-34"><a href="#cb28-34" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.downblocks.append(db)</span>
+<span id="cb28-35"><a href="#cb28-35" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.upblocks.insert(<span class="dv">0</span>, Upblock.from_downblock(db))</span>
+<span id="cb28-36"><a href="#cb28-36" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.middle <span class="op">=</span> res_block_cls(c_time, nfs[<span class="op">-</span><span class="dv">1</span>], nfs[<span class="op">-</span><span class="dv">1</span>], act<span class="op">=</span>act)</span>
+<span id="cb28-37"><a href="#cb28-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-38"><a href="#cb28-38" aria-hidden="true" tabindex="-1"></a>        <span class="co"># vvv double check this</span></span>
+<span id="cb28-39"><a href="#cb28-39" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.end <span class="op">=</span> PreactConvBlock(nfs[<span class="dv">0</span>], color_channels, act<span class="op">=</span>act)</span>
+<span id="cb28-40"><a href="#cb28-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-41"><a href="#cb28-41" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Uniquely for a U-net module output dimensions must match the input dimensions</span></span>
+<span id="cb28-42"><a href="#cb28-42" aria-hidden="true" tabindex="-1"></a>    <span class="at">@jaxtyped</span>(typechecker<span class="op">=</span>beartype)</span>
+<span id="cb28-43"><a href="#cb28-43" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, x_t: InFeatureMapTensor, t: TimeStepTensor) <span class="op">-&gt;</span> InFeatureMapTensor:</span>
+<span id="cb28-44"><a href="#cb28-44" aria-hidden="true" tabindex="-1"></a>        te <span class="op">=</span> <span class="va">self</span>.time_embedding(t)</span>
+<span id="cb28-45"><a href="#cb28-45" aria-hidden="true" tabindex="-1"></a>        _, c, _, _ <span class="op">=</span> x_t.shape</span>
+<span id="cb28-46"><a href="#cb28-46" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> c <span class="op">!=</span> <span class="va">self</span>.start.in_channels:</span>
+<span id="cb28-47"><a href="#cb28-47" aria-hidden="true" tabindex="-1"></a>            <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"model color channels must match input data channels"</span>)</span>
+<span id="cb28-48"><a href="#cb28-48" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> <span class="va">self</span>.start(x_t)</span>
+<span id="cb28-49"><a href="#cb28-49" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> db <span class="kw">in</span> <span class="va">self</span>.downblocks:</span>
+<span id="cb28-50"><a href="#cb28-50" aria-hidden="true" tabindex="-1"></a>            x <span class="op">=</span> db(x, te)</span>
+<span id="cb28-51"><a href="#cb28-51" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> <span class="va">self</span>.middle(x, te)</span>
+<span id="cb28-52"><a href="#cb28-52" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> ub, db <span class="kw">in</span> <span class="bu">zip</span>(<span class="va">self</span>.upblocks, <span class="bu">reversed</span>(<span class="va">self</span>.downblocks)):</span>
+<span id="cb28-53"><a href="#cb28-53" aria-hidden="true" tabindex="-1"></a>            x <span class="op">=</span> ub(x, db, te)</span>
+<span id="cb28-54"><a href="#cb28-54" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">self</span>.end(x)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Let’s make sure we can do a forward prop.</p>
+<div id="cell-29" class="cell" data-execution_count="18">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>unet <span class="op">=</span> Unet(</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>    nfs<span class="op">=</span>(<span class="dv">224</span>, <span class="dv">448</span>, <span class="dv">672</span>, <span class="dv">896</span>),</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>    n_blocks<span class="op">=</span>(<span class="dv">3</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">1</span>),</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>    color_channels<span class="op">=</span><span class="dv">3</span>,</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>    act<span class="op">=</span>nn.ReLU,</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-30" class="cell" data-execution_count="19">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>tb <span class="op">=</span> torch.linspace(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">16</span>)</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>xb.shape, tb.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="19">
+<pre><code>(torch.Size([16, 3, 8, 8]), torch.Size([16]))</code></pre>
+</div>
+</div>
+<div id="cell-31" class="cell" data-execution_count="20">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> torch.no_grad():</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>    yb <span class="op">=</span> unet(xb, tb)</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> xb.shape <span class="op">==</span> yb.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/jeremyadamsfisher\.github\.io\/slow_diffusion");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/jeremyadamsfisher/slow_diffusion/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>
