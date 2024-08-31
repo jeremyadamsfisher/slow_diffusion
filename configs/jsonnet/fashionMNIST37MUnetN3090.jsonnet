@@ -1,5 +1,5 @@
 local main = import 'main.libsonnet';
-local tinyUNet = import 'tinyUNet.libsonnet';
+local model = import '37MUNet.libsonnet';
 local highViz = import 'highViz.libsonnet';
 local fashionMNIST = import 'fashionMNIST.libsonnet';
 
@@ -11,4 +11,4 @@ local data = {
     }
 };
 
-main.main(tinyUNet, data, 25, callbacks=[])
+main.main(model, data, 25, callbacks=[])

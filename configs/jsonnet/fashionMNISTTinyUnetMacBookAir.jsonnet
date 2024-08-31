@@ -1,9 +1,8 @@
 local main = import 'main.libsonnet';
 local tinyUNet = import 'tinyUNet.libsonnet';
-local highViz = import 'highviz.libsonnet';
+local highViz = import 'highViz.libsonnet';
 
 local model = {
-  "model": {
     "nfs": [
       16,
       32,
@@ -17,7 +16,6 @@ local model = {
     ],
     "color_channels": 1,
     "lr": 0.004
-  }
 };
 
 local singleProcDataModule = {

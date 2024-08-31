@@ -11,7 +11,7 @@ import torch
 from beartype import beartype
 from torch import nn
 
-from .model import Unet
+from .model import NonPreactResBlock, PreactResBlock, Unet
 
 # %% ../nbs/01_training.ipynb 3
 class UnetLightning(L.LightningModule):
@@ -26,7 +26,9 @@ class UnetLightning(L.LightningModule):
         one_cycle_div_factor: float = 25.0,
         one_cycle_final_div_factor: float = 1e4,
         adamw_epsilon: float = 1e-5,
-        act: type[torch.nn.Module] = torch.nn.ReLU,
+        act: type[torch.nn.Module] | str = "torch.nn.ReLU",
+        res_block_cls: type[nn.Module] | str = "PreactResBlock",
+        kaiming: bool = False,
     ):
         """Unet training code
 
@@ -46,13 +48,25 @@ class UnetLightning(L.LightningModule):
             adamw_epsilon: term added to the denominator to improve numerical
                 stability. PyTorch defaults to 1e-8. 1e-5 is better.
             act: activation function
+            res_block_cls: classic or preactivation resblock
+            kaiming: perform kaiming initialization
         """
         super().__init__()
         if isinstance(act, str):
             act = eval(act)
+        if isinstance(res_block_cls, str):
+            res_block_cls = eval(res_block_cls)
         self.unet = Unet(
-            nfs=nfs, n_blocks=n_blocks, color_channels=color_channels, act=act
+            nfs=nfs,
+            n_blocks=n_blocks,
+            color_channels=color_channels,
+            act=act,
+            res_block_cls=res_block_cls,
         )
+        if kaiming:
+            from slow_diffusion.init import kaiming as kaiming_
+
+            self.unet.apply(kaiming_)
         self.save_hyperparameters()
         self.loss_fn = torch.nn.MSELoss()
 

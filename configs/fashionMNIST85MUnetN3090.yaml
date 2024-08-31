@@ -1,7 +1,7 @@
 data:
   class_path: slow_diffusion.fashionmnist.FashionMNISTDataModule
   init_args:
-    bs: 1024
+    bs: 512
     n_workers: -1
 model:
   act: torch.nn.SiLU
@@ -15,11 +15,11 @@ model:
     - 1
     - 1
   nfs:
-    - 64
     - 128
     - 256
     - 384
     - 512
+    - 768
   res_block_cls: NonPreactResBlock
 trainer:
   callbacks:

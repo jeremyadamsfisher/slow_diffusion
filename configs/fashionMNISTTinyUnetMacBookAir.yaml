@@ -1,3 +1,20 @@
+data:
+  class_path: slow_diffusion.fashionmnist.FashionMNISTDataModule
+  init_args:
+    bs: 32
+    n_workers: 0
+model:
+  color_channels: 1
+  lr: 0.0040000000000000001
+  n_blocks:
+    - 1
+    - 1
+    - 1
+    - 1
+  nfs:
+    - 16
+    - 32
+    - 64
 trainer:
   callbacks:
     - class_path: slow_diffusion.ddpm.DDPMCallback
@@ -15,11 +32,6 @@ trainer:
     - class_path: slow_diffusion.monitoring.StatsCallback
       init_args:
         mod_filter: convs
-  data:
-    class_path: slow_diffusion.fashionmnist.FashionMNISTDataModule
-    init_args:
-      bs: 32
-      n_workers: 0
   default_root_dir: .lightning_root_dir
   log_every_n_steps: 5
   logger:
@@ -27,17 +39,4 @@ trainer:
     init_args:
       project: slow_diffusion
   max_epochs: 1
-  model:
-    model:
-      color_channels: 1
-      lr: 0.0040000000000000001
-      n_blocks:
-        - 1
-        - 1
-        - 1
-        - 1
-      nfs:
-        - 16
-        - 32
-        - 64
   precision: bf16-mixed

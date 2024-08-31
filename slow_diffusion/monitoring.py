@@ -125,24 +125,24 @@ class StatsCallback(L.Callback):
             fig.subplots_adjust(right=0.75)
             return fig
 
-    def log(self):
+    def log_stats(self):
         if not self.live:
             fig = self.plot()
             img = wandb.Image(fig)
             wandb.log({"stats": img})
-            fig.close()
+            plt.close(fig)
 
     def on_train_epoch_end(self, trainer, pl_module):
-        self.log()
+        self.log_stats()
 
     def cleanup(self):
         for s in self.mod_stats:
             s.cleanup()
 
     def on_fit_end(self, trainer, pl_module):
-        self.log()
+        self.log_stats()
         self.cleanup()
 
     def on_exception(self, trainer, pl_module, exception):
-        self.log()
+        self.log_stats()
         self.cleanup()

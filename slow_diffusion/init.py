@@ -4,6 +4,7 @@
 __all__ = []
 
 # %% ../nbs/06_initialization.ipynb 2
+import logging
 from collections import Counter
 from contextlib import contextmanager
 from functools import singledispatch
@@ -11,9 +12,8 @@ from functools import singledispatch
 import lightning as L
 import matplotlib.pyplot as plt
 import torch
-import logging
 from torch import nn
 
 from .fashionmnist import FashionMNISTDataModule
-from .model import ConvBlock
+from .model import PreactConvBlock
 from .training import get_tiny_unet_lightning

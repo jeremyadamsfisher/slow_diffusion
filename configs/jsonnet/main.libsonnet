@@ -32,9 +32,9 @@ local main(model, data, max_epochs, callbacks) = {
         }
       },
     ] + callbacks,
-    "model": model,
-    "data": data
-  }
+  },
+  "model": model,
+  "data": data
 };
 
 {

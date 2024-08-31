@@ -78,6 +78,8 @@ class DiffusionDataModule(L.LightningDataModule):
         self.data_dir = Path(data_dir)
 
     def noisify_fn(self, x_0):
+        # TODO: better to have subclasses provide a "normalized x_0" method
+        # and perform noisification consistent here in the super class...
         raise NotImplementedError
 
     def post_process(self, ds):
