@@ -37,7 +37,7 @@ class MonitorCallback(L.Callback):
         for name, spec in self.gloms.items():
             self.log(name, glom(args, spec), on_step=True)
 
-# %% ../nbs/05_monitoring.ipynb 9
+# %% ../nbs/05_monitoring.ipynb 7
 class CountDeadUnitsCallback(L.Callback):
     """Check for numeric underflow or overflow"""
 
@@ -53,7 +53,7 @@ class CountDeadUnitsCallback(L.Callback):
         self.log("nans", nans, reduce_fx=max)
         self.log("zeros", zeros, reduce_fx=max)
 
-# %% ../nbs/05_monitoring.ipynb 12
+# %% ../nbs/05_monitoring.ipynb 10
 class Stats:
     def __init__(self, label, module, log, live):
         self.label = label
@@ -130,6 +130,7 @@ class StatsCallback(L.Callback):
             fig = self.plot()
             img = wandb.Image(fig)
             wandb.log({"stats": img})
+            fig.close()
 
     def on_train_epoch_end(self, trainer, pl_module):
         self.log()
